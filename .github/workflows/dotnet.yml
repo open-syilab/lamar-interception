@@ -1,0 +1,31 @@
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    env:
+      BUILD_CONFIG: 'Release'
+      SOLUTION: 'src/Lamar.DynamicInterception.sln'
+      
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+      
+    - name: Restore dependencies
+      run: dotnet restore $SOLUTION
+      
+    - name: Build
+      run: dotnet build $SOLUTION --configuration $BUILD_CONFIG --no-restore
+      
+    - name: Push
+      run: dotnet nuget push "**/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key ${{ secrets.SYILAB_NUGET_ORG_API_KEY }} --skip-duplicate
